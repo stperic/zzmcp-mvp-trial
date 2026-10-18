@@ -5,7 +5,7 @@ R-ERR-3 refines R-ERR source=f1:eD6CGTu8b6tPfoC65zq5mNDitO0IrEvzVJprYxOBUJk targ
 R-ERR-4 refines R-ERR source=f1:XIhVNEeNtmXdj86XlFWk6_aLYwHqgCxxtocfloRJq20 target=f1:VcjvPn6gQvzLHOYWGkk3j1uc2y1CyTjXBAtf4KyAUGM
 R-ERR-5 refines R-ERR source=f1:UNcmxCe7EK9wYScEI3bZyYUulvyL8sLlrHytlaZjTag target=f1:VcjvPn6gQvzLHOYWGkk3j1uc2y1CyTjXBAtf4KyAUGM
 R-RES-1 refines R-RES source=f1:P-5_qjFo3u9GEtc3UcyE06Z805MNOi6sG8JK9HT4oTo target=f1:9PXC-LFNELMYUrkSZAB8cnuOtRmG7gRGU4VGaQAr5GE
-R-RES-2 refines R-RES source=f1:iExFUe65HppwCfjFM1Z7uC5l7LpACjq9gO-4Llf2g4E target=f1:9PXC-LFNELMYUrkSZAB8cnuOtRmG7gRGU4VGaQAr5GE
+R-RES-2 refines R-RES source=f1:0RQ4n4nSIR3iuEkBKP4T_qpylaxyuKkX3S0SSQcu8QQ target=f1:9PXC-LFNELMYUrkSZAB8cnuOtRmG7gRGU4VGaQAr5GE
 R-RES-3 refines R-RES source=f1:J7-4zeUq2R7u4cF3ZyCQiDsvIUxkos5CGHpt0njbDeE target=f1:9PXC-LFNELMYUrkSZAB8cnuOtRmG7gRGU4VGaQAr5GE
 R-SCH-1 refines R-SCH source=f1:4nERRZ4O41NgOmpKZKnXeN74nA-uj3JgPK1EonBd51Y target=f1:SON0WA6CuDB993T_4_yMyavfm-HfrJhJBnk_--Jn2zU
 R-SCH-2 refines R-SCH source=f1:6DCKIvQdqPlh86ZSeQp33L3syUlSPTs_yndESyoemzM target=f1:SON0WA6CuDB993T_4_yMyavfm-HfrJhJBnk_--Jn2zU
@@ -54,16 +54,17 @@ serve.go#ServeIO implements R-SRV-4 source.sig=go1:wxW2uROyq-6SfyJ7W7qkHWPYDffV9
 serve.go#ServeStdio implements R-SRV-3 source.sig=go1:cX4iIuwHUp7PXmjjNy1Uye0ZRNXK5NxeEsTeQvQkFUc source.body=go1:zkt98xxzIpdqLOZOPtiQlheSvGjZIsFGNHZ2frVu5KY target=f1:3e28tp-W_eDGOKAsjLuAeB4AaxS_icBB9vh5oHeJVIA
 serve.go#nopWriteCloser implements R-SRV-4 source.sig=go1:mprhc_N4CDSuQztPDw761duicIXzPA_uw8A5IBXC1rg source.body=go1:mprhc_N4CDSuQztPDw761duicIXzPA_uw8A5IBXC1rg target=f1:3IX2nI0-akiIVDX5wCcIdRQ_d5eLgH3gBd8w1zicYoE
 tool.go#AddSchemaTool implements R-RES-1 source.sig=go1:5yyBmWA240yLN3LoJIcP6zjP969t3rXK5Fk0I9IugAM source.body=go1:l2ABdCb8hVDbof0TGDDb_aGAa8ofmnNOTzjctmARmUM target=f1:P-5_qjFo3u9GEtc3UcyE06Z805MNOi6sG8JK9HT4oTo
-tool.go#AddSchemaTool implements R-RES-2 source.sig=go1:5yyBmWA240yLN3LoJIcP6zjP969t3rXK5Fk0I9IugAM source.body=go1:l2ABdCb8hVDbof0TGDDb_aGAa8ofmnNOTzjctmARmUM target=f1:iExFUe65HppwCfjFM1Z7uC5l7LpACjq9gO-4Llf2g4E
+tool.go#AddSchemaTool implements R-RES-2 source.sig=go1:5yyBmWA240yLN3LoJIcP6zjP969t3rXK5Fk0I9IugAM source.body=go1:l2ABdCb8hVDbof0TGDDb_aGAa8ofmnNOTzjctmARmUM target=f1:0RQ4n4nSIR3iuEkBKP4T_qpylaxyuKkX3S0SSQcu8QQ
 tool.go#AddSchemaTool implements R-TOOL-1 source.sig=go1:5yyBmWA240yLN3LoJIcP6zjP969t3rXK5Fk0I9IugAM source.body=go1:l2ABdCb8hVDbof0TGDDb_aGAa8ofmnNOTzjctmARmUM target=f1:3z_-PpRmz1oOaoZJqdks3kA3qBt_AQp4-QIgHh64cC8
-tool.go#AddTool implements R-RES-2 source.sig=go1:8wlmH08GxBmtZx8uhIqatHr3I7Rftlz4pva-AZUpuAA source.body=go1:SIXPLnTwL9RMwbHPalKIzurN9V584HvBLgBad0LRMg0 target=f1:iExFUe65HppwCfjFM1Z7uC5l7LpACjq9gO-4Llf2g4E
+tool.go#AddTool implements R-RES-2 source.sig=go1:8wlmH08GxBmtZx8uhIqatHr3I7Rftlz4pva-AZUpuAA source.body=go1:SIXPLnTwL9RMwbHPalKIzurN9V584HvBLgBad0LRMg0 target=f1:0RQ4n4nSIR3iuEkBKP4T_qpylaxyuKkX3S0SSQcu8QQ
 tool.go#AddTool implements R-RES-3 source.sig=go1:8wlmH08GxBmtZx8uhIqatHr3I7Rftlz4pva-AZUpuAA source.body=go1:SIXPLnTwL9RMwbHPalKIzurN9V584HvBLgBad0LRMg0 target=f1:J7-4zeUq2R7u4cF3ZyCQiDsvIUxkos5CGHpt0njbDeE
 tool.go#AddTool implements R-TOOL-4 source.sig=go1:8wlmH08GxBmtZx8uhIqatHr3I7Rftlz4pva-AZUpuAA source.body=go1:SIXPLnTwL9RMwbHPalKIzurN9V584HvBLgBad0LRMg0 target=f1:emmKPg1XhOmMP8P33ODajcUP3zPQLDgu2B7KT-H-xSA
 tool.go#ObjectResult implements R-RES-1 source.sig=go1:RQtyRDoSQXRr0fH69ZxKYw--V6iLquS-JjuwmZXoH_o source.body=go1:9ZMxCKqXY5fnwZWCMIIDfkWauYycIPQ4in-AQrT4his target=f1:P-5_qjFo3u9GEtc3UcyE06Z805MNOi6sG8JK9HT4oTo
 tool.go#ObjectResult implements R-RES-3 source.sig=go1:RQtyRDoSQXRr0fH69ZxKYw--V6iLquS-JjuwmZXoH_o source.body=go1:9ZMxCKqXY5fnwZWCMIIDfkWauYycIPQ4in-AQrT4his target=f1:J7-4zeUq2R7u4cF3ZyCQiDsvIUxkos5CGHpt0njbDeE
 tool.go#SchemaFor implements R-SCH-1 source.sig=go1:Lkh5YfoSTCXc4igcL6Dyaa31A4V1CnL3RDsusVlfQbg source.body=go1:kVpTQbhYHujujtHXVxk8zrN5qPG9mykuuKao3wC-E9g target=f1:4nERRZ4O41NgOmpKZKnXeN74nA-uj3JgPK1EonBd51Y
 tool.go#SchemaFor implements R-SCH-2 source.sig=go1:Lkh5YfoSTCXc4igcL6Dyaa31A4V1CnL3RDsusVlfQbg source.body=go1:kVpTQbhYHujujtHXVxk8zrN5qPG9mykuuKao3wC-E9g target=f1:6DCKIvQdqPlh86ZSeQp33L3syUlSPTs_yndESyoemzM
-tool.go#Summarizer implements R-RES-2 source.sig=go1:_YC3stW6Ons2ZIl6XhWYYwqZgsJ2Yimo7T0A8eHDm9Y source.body=go1:_YC3stW6Ons2ZIl6XhWYYwqZgsJ2Yimo7T0A8eHDm9Y target=f1:iExFUe65HppwCfjFM1Z7uC5l7LpACjq9gO-4Llf2g4E
+tool.go#Summarizer implements R-RES-2 source.sig=go1:_YC3stW6Ons2ZIl6XhWYYwqZgsJ2Yimo7T0A8eHDm9Y source.body=go1:_YC3stW6Ons2ZIl6XhWYYwqZgsJ2Yimo7T0A8eHDm9Y target=f1:0RQ4n4nSIR3iuEkBKP4T_qpylaxyuKkX3S0SSQcu8QQ
+tool.go#addTool implements R-RES-2 source.sig=go1:bQ5Ti6fES2p_rhHkoGXhPLj3uMX47VpNjyPXDuBiHG0 source.body=go1:pJW2aJJ0s-xX7NYI3fs4Gh3QudGyo1pF7A38DCyCf1U target=f1:0RQ4n4nSIR3iuEkBKP4T_qpylaxyuKkX3S0SSQcu8QQ
 tool.go#addTool implements R-RES-3 source.sig=go1:bQ5Ti6fES2p_rhHkoGXhPLj3uMX47VpNjyPXDuBiHG0 source.body=go1:pJW2aJJ0s-xX7NYI3fs4Gh3QudGyo1pF7A38DCyCf1U target=f1:J7-4zeUq2R7u4cF3ZyCQiDsvIUxkos5CGHpt0njbDeE
 tool.go#addTool implements R-TOOL-1 source.sig=go1:bQ5Ti6fES2p_rhHkoGXhPLj3uMX47VpNjyPXDuBiHG0 source.body=go1:pJW2aJJ0s-xX7NYI3fs4Gh3QudGyo1pF7A38DCyCf1U target=f1:3z_-PpRmz1oOaoZJqdks3kA3qBt_AQp4-QIgHh64cC8
 tool.go#addTool implements R-TOOL-2 source.sig=go1:bQ5Ti6fES2p_rhHkoGXhPLj3uMX47VpNjyPXDuBiHG0 source.body=go1:pJW2aJJ0s-xX7NYI3fs4Gh3QudGyo1pF7A38DCyCf1U target=f1:-I2j5TQUjvPfKB2ayMvd3r9OI2UwpwiFKie7GGN7xZA
@@ -94,10 +95,11 @@ zzmcp_test.go#TestNonObjectResultIsRejected verifies R-RES-3 source.sig=go1:qJHm
 zzmcp_test.go#TestSchemaToolRejectsInvalidArgumentsBeforeHandler verifies R-TOOL-2 source.sig=go1:sCF3j0Sys6VjuMPTGgS-g9DEkPS3nFLBXru-tsmw_Vk source.body=go1:D_b5V5es8ji6CKxF8PdWKRPrFLmHbhXxqRId50TWLsw target=f1:-I2j5TQUjvPfKB2ayMvd3r9OI2UwpwiFKie7GGN7xZA
 zzmcp_test.go#TestSchemaToolRequiresObjectSchema verifies R-TOOL-1 source.sig=go1:wJ135gSjCt00EpgQO9WzitYXv988WjvcGbyeIfrjx8s source.body=go1:jswoOhhTn8FX8vF4AM8MzDCCISrvieNm2Cerrf67fDw target=f1:3z_-PpRmz1oOaoZJqdks3kA3qBt_AQp4-QIgHh64cC8
 zzmcp_test.go#TestSchemaToolReturnsStructuredObject verifies R-RES-1 source.sig=go1:aIxArQ_zOfe0fvIisqTfQKU6-zGPqABoDA5lDi1ssIM source.body=go1:d0768n7e9jlJ9bjyKavplY0eCtct0_VGCjpt_Msj0cU target=f1:P-5_qjFo3u9GEtc3UcyE06Z805MNOi6sG8JK9HT4oTo
+zzmcp_test.go#TestSchemaToolSummary verifies R-RES-2 source.sig=go1:ddYW-DYHuzCtE7jw0c06Q6-QVxvXOa4m3biKgm7oT4c source.body=go1:Xu19MLS1wZ_RwNVo3pjl5iH5UkdDq0S4szoLC6jeqbE target=f1:0RQ4n4nSIR3iuEkBKP4T_qpylaxyuKkX3S0SSQcu8QQ
 zzmcp_test.go#TestServeIOAnswersSequentialCalls verifies R-SRV-4 source.sig=go1:ZZ48L-ul_5GdGB_8vvN3THxt1QHqoZI5tXIbx5XnYMs source.body=go1:K1dPkuw7FTbmfOKazXQZDY-pjRdfXUXKOECaE6AM7ow target=f1:3IX2nI0-akiIVDX5wCcIdRQ_d5eLgH3gBd8w1zicYoE
 zzmcp_test.go#TestToolErrorsCarryCodes verifies R-ERR-1 source.sig=go1:4ORmxkwbmpbyfVKTvwbOwnVr1Gc_Szl1YbmnooI5mIM source.body=go1:k9qO8F3L_a9V1hPG7YrSPkYofp7KlZG0xvuCAnNyvXY target=f1:w5nmJyjee3Oovl5bfen5bfB7zfw79MKxa2ve1snKbf0
 zzmcp_test.go#TestToolErrorsCarryCodes verifies R-ERR-3 source.sig=go1:4ORmxkwbmpbyfVKTvwbOwnVr1Gc_Szl1YbmnooI5mIM source.body=go1:k9qO8F3L_a9V1hPG7YrSPkYofp7KlZG0xvuCAnNyvXY target=f1:eD6CGTu8b6tPfoC65zq5mNDitO0IrEvzVJprYxOBUJk
-zzmcp_test.go#TestTypedToolInfersObjectSchemaAndSummary verifies R-RES-2 source.sig=go1:pFjxyuJxGRuRUkSc3gw5hneTHWHLo3LRRLFD958Wfz8 source.body=go1:T70xAB9qM-GMjpCKFZ58pzw_lW-dXG2AjXu9tzkG-Is target=f1:iExFUe65HppwCfjFM1Z7uC5l7LpACjq9gO-4Llf2g4E
+zzmcp_test.go#TestTypedToolInfersObjectSchemaAndSummary verifies R-RES-2 source.sig=go1:pFjxyuJxGRuRUkSc3gw5hneTHWHLo3LRRLFD958Wfz8 source.body=go1:T70xAB9qM-GMjpCKFZ58pzw_lW-dXG2AjXu9tzkG-Is target=f1:0RQ4n4nSIR3iuEkBKP4T_qpylaxyuKkX3S0SSQcu8QQ
 zzmcp_test.go#TestTypedToolInfersObjectSchemaAndSummary verifies R-SCH-1 source.sig=go1:pFjxyuJxGRuRUkSc3gw5hneTHWHLo3LRRLFD958Wfz8 source.body=go1:T70xAB9qM-GMjpCKFZ58pzw_lW-dXG2AjXu9tzkG-Is target=f1:4nERRZ4O41NgOmpKZKnXeN74nA-uj3JgPK1EonBd51Y
 zzmcp_test.go#TestTypedToolInfersObjectSchemaAndSummary verifies R-SRV-2 source.sig=go1:pFjxyuJxGRuRUkSc3gw5hneTHWHLo3LRRLFD958Wfz8 source.body=go1:T70xAB9qM-GMjpCKFZ58pzw_lW-dXG2AjXu9tzkG-Is target=f1:W0NO-warUTPBhKSEAvL-3cig-lWKZ-CWTQmmEapA_KI
 zzmcp_test.go#TestTypedToolRejectsNilResultBeforeSummary verifies R-RES-3 source.sig=go1:xPCAMlt4Vc2H3trkcaP40nBga_0VaDfJ6s6QCLm_bko source.body=go1:b4U6ZbTfBENOR1l7j--J7mbIh7KwMfkrF5G4rVo8R5c target=f1:J7-4zeUq2R7u4cF3ZyCQiDsvIUxkos5CGHpt0njbDeE

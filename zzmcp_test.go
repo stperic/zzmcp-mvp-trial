@@ -177,6 +177,43 @@ type greetOutput struct {
 
 func (g greetOutput) Summary() string { return "Greeted: " + g.Greeting }
 
+type emptySummaryOutput struct {
+	Value string `json:"value"`
+}
+
+func (emptySummaryOutput) Summary() string { return "" }
+
+func TestSchemaToolSummary(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		output   any
+		err      error
+		wantText string
+		wantCode string
+		wantBody map[string]any
+	}{
+		{name: "summary", output: greetOutput{Greeting: "hello Ada"}, wantText: "Greeted: hello Ada", wantBody: map[string]any{"greeting": "hello Ada"}},
+		{name: "empty summary", output: emptySummaryOutput{Value: "hello"}, wantText: `{"value":"hello"}`, wantBody: map[string]any{"value": "hello"}},
+		{name: "nil output", output: (*greetOutput)(nil), wantCode: CodeInvalidResult},
+		{name: "handler error", output: (*greetOutput)(nil), err: NewError("FORBIDDEN", "owner required"), wantCode: "FORBIDDEN"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			session := echoServer(t, nil, func(context.Context, json.RawMessage) (any, error) { return tc.output, tc.err })
+			result := call(t, session, "echo", map[string]any{"name": "Ada"})
+			body := structured(t, result)
+			if tc.wantCode != "" {
+				if !result.IsError || body["code"] != tc.wantCode {
+					t.Fatalf("unexpected error result: %+v", result)
+				}
+				return
+			}
+			if result.IsError || text(t, result) != tc.wantText || !reflect.DeepEqual(body, tc.wantBody) {
+				t.Fatalf("unexpected summary or structured result: text=%q body=%v", text(t, result), body)
+			}
+		})
+	}
+}
+
 func TestTypedToolRejectsNilResultBeforeSummary(t *testing.T) {
 	server := NewServer(Options{Name: "test", Version: "1"})
 	err := AddTool(server, &mcp.Tool{Name: "greet"},

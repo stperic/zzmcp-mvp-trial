@@ -20,3 +20,15 @@ The trial runner stores raw test output and authority files outside tracked sour
 The existing requirement already requires `INVALID_RESULT` for null output. Its implementation links originally named only `ObjectResult`; the failing path begins in `AddTool` and goes through `addTool`. Those links and a regression test are added. Working scope includes R-RES-3, R-RES-2 and R-TOOL-1 because the shared registration callback and summary behavior are affected. No change to credential-isolation code is needed.
 
 The regression returns a nil `*greetOutput`, which implements `Summarizer` through its value-receiver method. The original code invokes that method before validating the null output, causing a panic. The proposed fix validates the result first, preserving successful typed summaries and schema-tool JSON text.
+
+## Feature proposal: R-RES-2
+
+Previous text:
+
+> For a tool registered with AddTool, an output implementing Summary() string supplies the text content block when the summary is non-empty, while structuredContent stays the JSON output. Outputs of tools registered with AddSchemaTool always use the JSON as text.
+
+Proposed text:
+
+> For a tool registered with AddTool or AddSchemaTool, a valid JSON object output implementing Summary() string supplies the text content block when the summary is non-empty, while structuredContent stays the JSON output. An empty summary uses the JSON as text. Invalid output is rejected before Summary is called.
+
+Reason: schema-defined tools currently cannot provide concise model-facing text through the existing interface even when they return the same output type as typed tools. Apply one validation and presentation path to both registration styles. This is a deliberate behavior extension, not a correction to the old requirement. R-RES-2 is set to draft pending owner review. The change leaves `ObjectResult(output, text)` itself unchanged, preserving its explicit text argument.

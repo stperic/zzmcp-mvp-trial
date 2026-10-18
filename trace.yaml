@@ -58,10 +58,12 @@ items:
     code: [tool.go#AddSchemaTool, tool.go#ObjectResult]
     tests: [zzmcp_test.go#TestSchemaToolReturnsStructuredObject]
   - id: R-RES-2
-    text: "For a tool registered with AddTool, an output implementing Summary() string supplies the text content block when the summary is non-empty, while structuredContent stays the JSON output. Outputs of tools registered with AddSchemaTool always use the JSON as text."
+    status: draft
+    rationale: Proposed for the MVP feature trial so schema-defined tools can use the same concise summaries as typed tools. Owner review remains pending.
+    text: "For a tool registered with AddTool or AddSchemaTool, a valid JSON object output implementing Summary() string supplies the text content block when the summary is non-empty, while structuredContent stays the JSON output. An empty summary uses the JSON as text. Invalid output is rejected before Summary is called."
     refines: [R-RES]
-    code: [tool.go#AddSchemaTool, tool.go#AddTool, tool.go#Summarizer]
-    tests: [zzmcp_test.go#TestTypedToolInfersObjectSchemaAndSummary]
+    code: [tool.go#AddSchemaTool, tool.go#AddTool, tool.go#Summarizer, tool.go#addTool]
+    tests: [zzmcp_test.go#TestTypedToolInfersObjectSchemaAndSummary, zzmcp_test.go#TestSchemaToolSummary]
   - id: R-RES-3
     text: "When a handler's output is not a JSON object (for example an array, a string, null, invalid JSON, or a value that cannot be encoded), the call is answered with an INVALID_RESULT tool error result instead of a successful result."
     refines: [R-RES]
