@@ -19,9 +19,9 @@ The SDK handles tool calls concurrently. A client must wait for a result before 
 
 ## Status
 
-- Local module, not yet published. Consumers use a `replace github.com/stperic/zzmcp => ../zzmcp` directive (adjust the relative path).
+- Public MVP qualification snapshot of the local module. The maintained module has not been released. Consumers use a `replace github.com/stperic/zzmcp => ../zzmcp` directive (adjust the relative path).
 - First consumer: zztrace. zzrouter, AlphaDB and zzfuse can migrate later; each currently has its own copy of these helpers on SDK v1.3.0 to v1.8.0.
-- License: to be chosen before publishing. zzrouter uses Apache-2.0.
+- License: unselected for this qualification snapshot.
 
 ## Development
 

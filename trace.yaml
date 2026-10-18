@@ -58,8 +58,8 @@ items:
     code: [tool.go#AddSchemaTool, tool.go#ObjectResult]
     tests: [zzmcp_test.go#TestSchemaToolReturnsStructuredObject]
   - id: R-RES-2
-    status: draft
-    rationale: Proposed for the MVP feature trial so schema-defined tools can use the same concise summaries as typed tools. Owner review remains pending.
+    status: accepted
+    rationale: Accepted for the MVP trial under the owner's 2026-10-18 approval to continue and delegated Codex review. Actual forge approval and required checks gate the merge; this is not independent human code review.
     text: "For a tool registered with AddTool or AddSchemaTool, a valid JSON object output implementing Summary() string supplies the text content block when the summary is non-empty, while structuredContent stays the JSON output. An empty summary uses the JSON as text. Invalid output is rejected before Summary is called."
     refines: [R-RES]
     code: [tool.go#AddSchemaTool, tool.go#AddTool, tool.go#Summarizer, tool.go#addTool]

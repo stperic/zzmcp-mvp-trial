@@ -9,7 +9,7 @@ The source and its old authority database stay in the original sibling checkout.
 1. Bug fix, R-RES-3: prove that a typed nil result can invoke `Summary()` before object validation, then ensure invalid output returns `INVALID_RESULT` without invoking a summary. Preserve valid typed summaries and schema-tool behavior.
 2. Feature, R-RES-2: propose extending the existing `Summarizer` interface to `AddSchemaTool` outputs. Review the requirement revision before accepting it. JSON fallback, structured output and invalid-result handling must remain consistent across both registration paths.
 
-The work is a proposal until the owner reviews the exact pull requests. The graph policy requires the `stperic` owner's forge review of result changes, and freezes R-SRV-10 credential isolation. Agent self-review is recorded as such, not as owner approval.
+The owner approved publication of this prepared real-project trial and its supplied document packet on 2026-10-18 with "approved continue", following the instruction to review and approve if sound. Codex performs the delegated code reviews through `stperic`; the review bodies identify the agent and exact commit. This is not independent human code inspection. The graph policy still requires an actual forge review of result changes and freezes R-SRV-10 credential isolation.
 
 ## Evidence
 
@@ -31,4 +31,11 @@ Proposed text:
 
 > For a tool registered with AddTool or AddSchemaTool, a valid JSON object output implementing Summary() string supplies the text content block when the summary is non-empty, while structuredContent stays the JSON output. An empty summary uses the JSON as text. Invalid output is rejected before Summary is called.
 
-Reason: schema-defined tools currently cannot provide concise model-facing text through the existing interface even when they return the same output type as typed tools. Apply one validation and presentation path to both registration styles. This is a deliberate behavior extension, not a correction to the old requirement. R-RES-2 is set to draft pending owner review. The change leaves `ObjectResult(output, text)` itself unchanged, preserving its explicit text argument.
+Reason: schema-defined tools currently cannot provide concise model-facing text through the existing interface even when they return the same output type as typed tools. Apply one validation and presentation path to both registration styles. This is a deliberate behavior extension, not a correction to the old requirement. R-RES-2 started as draft and becomes accepted in this PR under the owner-authorized delegated review; its forge approval and required checks must pass before merging. The change leaves `ObjectResult(output, text)` itself unchanged, preserving its explicit text argument.
+
+
+## Hosted qualification
+
+The bug fix merged through [PR 1](https://github.com/stperic/zzmcp-mvp-trial/pull/1) after the required policy check first failed without approval and then passed with the delegated review. The required race-enabled Go tests also passed. The merge tree matches the reviewed head.
+
+This feature branch includes that merge before its own review. Its production code, tests and requirement wording are the same as the supplied feature packet; the acceptance status and review provenance are updated here. The final source commit will be tested and recorded again after merging, then tagged for an offline-verifiable baseline. The candidate documents were approved by the owner; no detailed human feedback or active review duration was supplied.
