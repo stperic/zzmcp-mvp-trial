@@ -17,8 +17,8 @@ import (
 // a json.RawMessage is used as is.
 type Handler func(ctx context.Context, arguments json.RawMessage) (any, error)
 
-// Summarizer lets a typed tool's output supply the text content shown to the
-// model. Without it, the text content is the JSON result.
+// Summarizer lets a tool's valid object output supply the text content shown
+// to the model. Without it, or with an empty summary, the text is the JSON result.
 type Summarizer interface {
 	Summary() string
 }
@@ -26,10 +26,7 @@ type Summarizer interface {
 // AddSchemaTool registers a tool whose input schema is written by hand, as a
 // JSON-compatible map or a *jsonschema.Schema with type "object".
 func AddSchemaTool(server *mcp.Server, tool *mcp.Tool, handler Handler) error {
-	return addTool(server, tool, func(ctx context.Context, arguments json.RawMessage) (any, Summarizer, error) {
-		output, err := handler(ctx, arguments)
-		return output, nil, err
-	})
+	return addTool(server, tool, handler)
 }
 
 // AddTool registers a typed tool. Without an explicit input schema, the
@@ -43,21 +40,16 @@ func AddTool[In, Out any](server *mcp.Server, tool *mcp.Tool, handler func(conte
 		}
 		registered.InputSchema = schema
 	}
-	return addTool(server, &registered, func(ctx context.Context, arguments json.RawMessage) (any, Summarizer, error) {
+	return addTool(server, &registered, func(ctx context.Context, arguments json.RawMessage) (any, error) {
 		var input In
 		if err := json.Unmarshal(arguments, &input); err != nil {
-			return nil, nil, invalidArguments(ctx, Errorf(CodeInvalidArguments, "%v", err))
+			return nil, invalidArguments(ctx, Errorf(CodeInvalidArguments, "%v", err))
 		}
-		output, err := handler(ctx, input)
-		if err != nil {
-			return nil, nil, err
-		}
-		summary, _ := any(output).(Summarizer)
-		return output, summary, nil
+		return handler(ctx, input)
 	})
 }
 
-func addTool(server *mcp.Server, tool *mcp.Tool, call func(context.Context, json.RawMessage) (any, Summarizer, error)) error {
+func addTool(server *mcp.Server, tool *mcp.Tool, call Handler) error {
 	resolved, err := resolveInputSchema(tool.InputSchema)
 	if err != nil {
 		return fmt.Errorf("tool %s: %w", tool.Name, err)
@@ -68,12 +60,15 @@ func addTool(server *mcp.Server, tool *mcp.Tool, call func(context.Context, json
 		if invalid != nil {
 			return ErrorResult(invalidArguments(ctx, invalid)), nil
 		}
-		output, summary, err := call(ctx, arguments)
+		output, err := call(ctx, arguments)
 		if err != nil {
 			return ErrorResult(err), nil
 		}
 		result := ObjectResult(output, "")
-		if !result.IsError && summary != nil {
+		if result.IsError {
+			return result, nil
+		}
+		if summary, ok := output.(Summarizer); ok {
 			if text := summary.Summary(); text != "" {
 				result.Content = []mcp.Content{&mcp.TextContent{Text: text}}
 			}

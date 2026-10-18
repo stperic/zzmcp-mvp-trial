@@ -58,15 +58,17 @@ items:
     code: [tool.go#AddSchemaTool, tool.go#ObjectResult]
     tests: [zzmcp_test.go#TestSchemaToolReturnsStructuredObject]
   - id: R-RES-2
-    text: "For a tool registered with AddTool, an output implementing Summary() string supplies the text content block when the summary is non-empty, while structuredContent stays the JSON output. Outputs of tools registered with AddSchemaTool always use the JSON as text."
+    status: accepted
+    rationale: Accepted for the MVP trial under the owner's 2026-10-18 approval to continue and delegated Codex review. Actual forge approval and required checks gate the merge; this is not independent human code review.
+    text: "For a tool registered with AddTool or AddSchemaTool, a valid JSON object output implementing Summary() string supplies the text content block when the summary is non-empty, while structuredContent stays the JSON output. An empty summary uses the JSON as text. Invalid output is rejected before Summary is called."
     refines: [R-RES]
-    code: [tool.go#AddSchemaTool, tool.go#AddTool, tool.go#Summarizer]
-    tests: [zzmcp_test.go#TestTypedToolInfersObjectSchemaAndSummary]
+    code: [tool.go#AddSchemaTool, tool.go#AddTool, tool.go#Summarizer, tool.go#addTool]
+    tests: [zzmcp_test.go#TestTypedToolInfersObjectSchemaAndSummary, zzmcp_test.go#TestSchemaToolSummary]
   - id: R-RES-3
     text: "When a handler's output is not a JSON object (for example an array, a string, null, invalid JSON, or a value that cannot be encoded), the call is answered with an INVALID_RESULT tool error result instead of a successful result."
     refines: [R-RES]
     code: [tool.go#ObjectResult, tool.go#AddTool, tool.go#addTool]
-    tests: [zzmcp_test.go#TestNonObjectResultIsRejected, zzmcp_test.go#TestTypedToolRejectsNilResultBeforeSummary]
+    tests: [zzmcp_test.go#TestNonObjectResultIsRejected, zzmcp_test.go#TestTypedToolRejectsNilResultBeforeSummary, zzmcp_test.go#TestSchemaToolSummary]
   - id: R-SCH-1
     text: "SchemaFor[T] returns the schema inferred from T as a JSON object in which every boolean subschema under properties, $defs, definitions, patternProperties, dependentSchemas, items, additionalProperties, additionalItems, unevaluatedProperties, unevaluatedItems, propertyNames, contains, not, if, then, else, contentSchema, allOf, anyOf, oneOf or prefixItems is replaced by its object equivalent: true by {} and false by {\"not\": {}}. Descriptions from jsonschema struct tags are kept."
     refines: [R-SCH]
