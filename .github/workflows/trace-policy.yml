@@ -1,0 +1,118 @@
+name: Trace policy
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, edited]
+  pull_request_review:
+    types: [submitted, edited, dismissed]
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: Pull request number to evaluate
+        type: string
+        required: false
+      open_trial:
+        description: Open a prepared candidate as the Actions bot
+        type: choice
+        options: [none, bug, feature]
+        default: none
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  open-trial:
+    if: github.event_name == 'workflow_dispatch' && inputs.open_trial != 'none'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Open a prepared candidate for owner review
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          TRIAL: ${{ inputs.open_trial }}
+        run: |
+          case "$TRIAL" in
+            bug)
+              branch=mvp/validate-before-summary
+              title='Validate typed tool results before calling Summary'
+              body='Real zzmcp bug fix prepared by Codex. A nil typed result must return INVALID_RESULT without invoking Summary. See MVP-TRIAL.md for scope, regression and provenance. Owner review is pending.'
+              ;;
+            feature)
+              branch=mvp/schema-tool-summaries
+              title='Support output summaries for schema-defined tools'
+              body='Real zzmcp feature prepared by Codex. Proposed R-RES-2 revision extends Summarizer to AddSchemaTool after object validation, with JSON fallback for an empty summary. See MVP-TRIAL.md for old and proposed text. Owner review is pending.'
+              ;;
+            *) exit 1 ;;
+          esac
+          gh api --method POST "repos/$REPOSITORY/pulls" \
+            -f base=main -f "head=$branch" -f "title=$title" -f "body=$body"
+
+  policy:
+    if: github.event_name != 'workflow_dispatch' || inputs.pr != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      statuses: write
+    concurrency:
+      group: trace-policy-${{ github.event.pull_request.number || inputs.pr }}
+      cancel-in-progress: true
+    steps:
+      - name: Read PR coordinates and mark the check pending
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr }}
+        run: |
+          [[ "$PR_NUMBER" =~ ^[1-9][0-9]*$ ]]
+          gh api "repos/$REPOSITORY/pulls/$PR_NUMBER" > "$RUNNER_TEMP/pr.json"
+          head=$(jq -er '.head.sha' "$RUNNER_TEMP/pr.json")
+          [[ "$head" =~ ^[0-9a-f]{40}$ ]]
+          echo "head=$head" >> "$GITHUB_OUTPUT"
+          gh api --method POST "repos/$REPOSITORY/statuses/$head" \
+            -f state=pending -f context=zztrace/policy \
+            -f description='Evaluating trace policy and current reviews'
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ steps.pr.outputs.head }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Load the pinned checker
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          gh release download checker-mvp-v1 --repo "$REPOSITORY" \
+            --pattern zztrace-trace-linux-amd64 --dir "$RUNNER_TEMP"
+          printf '%s  %s\n' '64df6d9dbc304bd22a0321f1284b6327abf99d6107fd85d93cf2f33231fdc68f' "$RUNNER_TEMP/zztrace-trace-linux-amd64" | sha256sum --check -
+          chmod +x "$RUNNER_TEMP/zztrace-trace-linux-amd64"
+      - name: Evaluate the committed graph and GitHub approvals
+        id: policy
+        env:
+          CI: ${{ vars.ZZTRACE_REQUIRED_CHECK || 'false' }}
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr }}
+        run: |
+          "$RUNNER_TEMP/zztrace-trace-linux-amd64" policy \
+            --github "$REPOSITORY" --pr "$PR_NUMBER" > "$RUNNER_TEMP/policy.json"
+      - name: Publish the required status
+        if: always() && steps.pr.outputs.head != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          HEAD_COMMIT: ${{ steps.pr.outputs.head }}
+          POLICY_OUTCOME: ${{ steps.policy.outcome }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          state=failure
+          if [ "$POLICY_OUTCOME" = success ]; then state=success; fi
+          if [ -f "$RUNNER_TEMP/policy.json" ]; then cat "$RUNNER_TEMP/policy.json"; fi
+          gh api --method POST "repos/$REPOSITORY/statuses/$HEAD_COMMIT" \
+            -f "state=$state" -f context=zztrace/policy \
+            -f description='Trace policy and committed graph check' -f "target_url=$RUN_URL"

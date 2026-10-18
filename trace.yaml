@@ -1,0 +1,165 @@
+# Requirements of zzmcp, traced to code and tests. Checked by zztrace-trace.
+# Hazards:
+#   HAZ-CRED-MIXUP: a tool call reads or alters the credentials of another call, or of the
+#   HTTP request itself, so one tenant could act with another tenant's API key.
+# Adopted from the 2026-10-17 trace-MVP pilot's 32 requirements.
+# Their earlier reviews were owner-proxy reviews. Human acceptance remains pending.
+ostf: "0.1"
+policy:
+  owners: [maintainers]
+  groups:
+    maintainers: ["@stperic"]
+  locks:
+    - item: R-RES
+      owners: [maintainers]
+      reason: Review changes to result validation and presentation.
+    - item: R-SRV-10
+      mode: frozen
+      reason: Credential-isolation behavior is outside this trial.
+items:
+  - id: R-ERR
+    text: "A tool failure in a zzmcp server is answered as a tool error result (isError true) with a text content block. The result also carries a machine-readable body as structuredContent when the tool was registered through zzmcp (AddSchemaTool or AddTool), or when the tool was registered directly with the SDK on a NewServer server and its error supplies its own body (StructuredContent() any). A plain error from a tool registered directly with the SDK gets no structuredContent."
+    code: [errors.go#ErrorMiddleware, errors.go#ErrorResult]
+  - id: R-RES
+    text: "A successful zzmcp tool result is always a JSON object returned as structuredContent, together with one text content block for clients that read text."
+  - id: R-SCH
+    text: "Input schemas that zzmcp infers from Go types avoid schema forms that some MCP clients reject."
+  - id: R-SRV
+    text: "zzmcp builds SDK servers with its conventions installed and serves them over standard input and output, caller-supplied streams and stateless streamable HTTP."
+  - id: R-TOOL
+    text: "Every tool registered through zzmcp has an input JSON Schema of type \"object\", and each call's arguments are checked against it before the tool's handler runs."
+  - id: R-ERR-1
+    text: "When a tool fails with a zzmcp.Error (built with NewError or Errorf), its error result has structuredContent {\"code\": CODE, \"message\": MESSAGE}, with \"details\" present only when Details is set, and a single text content block reading \"CODE: MESSAGE\"."
+    refines: [R-ERR]
+    code: [errors.go#Error, errors.go#ErrorResult, errors.go#Errorf, errors.go#NewError]
+    tests: [zzmcp_test.go#TestToolErrorsCarryCodes]
+  - id: R-ERR-2
+    text: "When a tool fails with an error that implements StructuredContent() any, including one wrapped inside another error, the error result's structuredContent is the value that method returns (for example an RFC 9457 problem) and its text content is the error's Error() text."
+    refines: [R-ERR]
+    code: [errors.go#ErrorResult, errors.go#StructuredError]
+  - id: R-ERR-3
+    text: "When a tool fails with an error that supplies no body of its own, the error result's structuredContent is {\"code\": \"TOOL_FAILED\", \"message\": ERROR_TEXT} and its text content is the error text without a code prefix."
+    refines: [R-ERR]
+    code: [errors.go#ErrorResult]
+    tests: [zzmcp_test.go#TestToolErrorsCarryCodes]
+  - id: R-ERR-4
+    text: "On a server built with NewServer, a tool registered directly with the SDK (mcp.AddTool) that fails with an error implementing StructuredContent() any gets the same structuredContent body: ErrorMiddleware fills structuredContent from that method when the error result has none. Results that already have structuredContent, successful results and other methods pass through unchanged."
+    refines: [R-ERR]
+    code: [errors.go#ErrorMiddleware, zzmcp.go]
+    tests: [zzmcp_test.go#TestErrorMiddlewareCoversSDKTypedTools]
+  - id: R-ERR-5
+    text: "A call naming a tool the server does not have fails as a JSON-RPC protocol error (invalid params, -32602), as the MCP specification requires, not as a tool error result; zzmcp's error handling passes that protocol error through unchanged."
+    refines: [R-ERR]
+    code: [errors.go]
+    tests: [zzmcp_test.go#TestUnknownToolIsProtocolError]
+  - id: R-RES-1
+    text: "A successful result's structuredContent is the handler output encoded as JSON (a json.RawMessage output is used as is, with surrounding whitespace removed), and its single text content block holds that same JSON unless a non-empty text is supplied."
+    refines: [R-RES]
+    code: [tool.go#AddSchemaTool, tool.go#ObjectResult]
+    tests: [zzmcp_test.go#TestSchemaToolReturnsStructuredObject]
+  - id: R-RES-2
+    text: "For a tool registered with AddTool, an output implementing Summary() string supplies the text content block when the summary is non-empty, while structuredContent stays the JSON output. Outputs of tools registered with AddSchemaTool always use the JSON as text."
+    refines: [R-RES]
+    code: [tool.go#AddSchemaTool, tool.go#AddTool, tool.go#Summarizer]
+    tests: [zzmcp_test.go#TestTypedToolInfersObjectSchemaAndSummary]
+  - id: R-RES-3
+    text: "When a handler's output is not a JSON object (for example an array, a string, null, invalid JSON, or a value that cannot be encoded), the call is answered with an INVALID_RESULT tool error result instead of a successful result."
+    refines: [R-RES]
+    code: [tool.go#ObjectResult]
+    tests: [zzmcp_test.go#TestNonObjectResultIsRejected]
+  - id: R-SCH-1
+    text: "SchemaFor[T] returns the schema inferred from T as a JSON object in which every boolean subschema under properties, $defs, definitions, patternProperties, dependentSchemas, items, additionalProperties, additionalItems, unevaluatedProperties, unevaluatedItems, propertyNames, contains, not, if, then, else, contentSchema, allOf, anyOf, oneOf or prefixItems is replaced by its object equivalent: true by {} and false by {\"not\": {}}. Descriptions from jsonschema struct tags are kept."
+    refines: [R-SCH]
+    code: [tool.go#SchemaFor, tool.go#objectSchemas]
+    tests: [zzmcp_test.go#TestTypedToolInfersObjectSchemaAndSummary]
+  - id: R-SCH-2
+    text: "In a schema inferred by SchemaFor, a json.RawMessage field accepts any JSON value (the empty schema) unless the caller's type-schema map supplies another schema for json.RawMessage; schemas the caller supplies for other types are applied as well."
+    refines: [R-SCH]
+    code: [tool.go#SchemaFor]
+  - id: R-SRV-1
+    text: "NewServer returns an SDK server that reports Options.Name and Options.Version as its implementation, sends Options.Instructions to clients during initialization, logs through Options.Logger, and has ErrorMiddleware installed."
+    refines: [R-SRV]
+    code: [zzmcp.go#NewServer, zzmcp.go#Options]
+  - id: R-SRV-10
+    text: "Each HTTPRequestFromContext call returns its own copy of the header, so a handler that adds, changes or deletes fields in it changes neither the HTTP request nor the header returned by any other call."
+    refines: [R-SRV]
+    controls: [HAZ-CRED-MIXUP]
+    code: [serve.go#HTTPHandler, serve.go#HTTPRequestFromContext]
+    tests: [zzmcp_test.go#TestHTTPRequestHeaderIsCopiedPerCall]
+  - id: R-SRV-11
+    text: "HTTPRequestFromContext reports ok false, with an empty header and remote address, for a call that did not arrive through HTTPHandler, such as one served by ServeStdio, ServeIO or an in-memory transport, and for any context that does not come from an HTTPHandler call."
+    refines: [R-SRV]
+    code: [serve.go#HTTPRequestFromContext]
+    tests: [zzmcp_test.go#TestHTTPRequestAbsentOutsideHTTPHandler]
+  - id: R-SRV-2
+    text: "When Options.ToolsListTTL is greater than zero, tools/list results carry a cache hint (TTLMs) equal to that duration in whole milliseconds; with zero or a negative value, NewServer sets no cache hint. No other method receives the hint."
+    refines: [R-SRV]
+    code: [zzmcp.go#NewServer, zzmcp.go#Options]
+    tests: [zzmcp_test.go#TestTypedToolInfersObjectSchemaAndSummary]
+  - id: R-SRV-3
+    text: "ServeStdio serves the server over standard input and output until the client disconnects or the context ends, with maxLineBytes bounding one inbound JSON-RPC frame (zero selects the SDK default)."
+    refines: [R-SRV]
+    code: [serve.go#ServeStdio]
+  - id: R-SRV-4
+    text: "ServeIO serves the server over a caller-supplied reader and writer with the same frame bound as ServeStdio, answers successive calls on one session, returns nil when the client closes the session, and does not close the caller's reader or writer."
+    refines: [R-SRV]
+    code: [serve.go#ServeIO, serve.go#nopWriteCloser]
+    tests: [zzmcp_test.go#TestServeIOAnswersSequentialCalls]
+  - id: R-SRV-5
+    text: "HTTPHandler returns an http.Handler that serves the server's tools to MCP clients over streamable HTTP."
+    refines: [R-SRV]
+    code: [serve.go#HTTPHandler]
+    tests: [zzmcp_test.go#TestHTTPHandlerServesStatelessCalls]
+  - id: R-SRV-6
+    text: "HTTPHandler runs streamable HTTP in stateless mode with JSON responses rather than event streams, applies the standard library's cross-origin protection, cancels a call when its HTTP request is canceled, and bounds each request body by HTTPOptions.MaxRequestBytes (zero selects the SDK default)."
+    refines: [R-SRV]
+    code: [serve.go#HTTPHandler, serve.go#HTTPOptions]
+  - id: R-SRV-7
+    text: "During a tool call that arrived through HTTPHandler, the tool handler can read that HTTP request's header fields and remote address by calling HTTPRequestFromContext with its context, or with a context derived from it, which then reports ok true. This holds for tools registered with AddSchemaTool, with AddTool, and directly with the SDK on the served server."
+    refines: [R-SRV]
+    code: [serve.go#HTTPHandler, serve.go#HTTPRequestFromContext, serve.go#HTTPRequestInfo]
+  - id: R-SRV-8
+    text: "The header reported by HTTPRequestFromContext holds every field of the HTTP request's Header as it reached HTTPHandler, with the same names and values, including credentials such as Authorization or X-Api-Key. zzmcp does not authenticate, remove or rewrite any field. Host is not included, because net/http keeps it outside Header."
+    refines: [R-SRV]
+    code: [serve.go#HTTPHandler, serve.go#HTTPRequestFromContext]
+    tests: [zzmcp_test.go#TestHTTPRequestReachesToolHandlers]
+  - id: R-SRV-9
+    text: "The remote address reported by HTTPRequestFromContext is the HTTP request's RemoteAddr as it reached HTTPHandler; for a client connected directly over TCP this is the peer's \"IP:port\". zzmcp does not derive it from forwarding headers such as X-Forwarded-For or Forwarded, which stay readable in the header."
+    refines: [R-SRV]
+    code: [serve.go#HTTPHandler]
+    tests: [zzmcp_test.go#TestHTTPRequestReachesToolHandlers]
+  - id: R-TOOL-1
+    text: "AddSchemaTool, and AddTool given an explicit schema, accept an input schema written as a JSON-compatible map or a *jsonschema.Schema. Registration returns an error, instead of panicking as the SDK does, and registers no tool when the schema is missing, cannot be encoded or parsed, does not have type \"object\", or cannot be resolved (including invalid default values)."
+    refines: [R-TOOL]
+    code: [tool.go#AddSchemaTool, tool.go#addTool, tool.go#resolveInputSchema]
+    tests: [zzmcp_test.go#TestSchemaToolRequiresObjectSchema]
+  - id: R-TOOL-2
+    text: "When a call's arguments do not satisfy the tool's input schema, the handler is not called and the call is answered with the server's invalid-arguments tool error result. By default that result has structuredContent code INVALID_ARGUMENTS and text starting \"INVALID_ARGUMENTS: \"; a server built with NewServer can supply its own error instead (R-TOOL-5)."
+    refines: [R-TOOL]
+    code: [tool.go#addTool, tool.go#validArguments, tool.go#invalidArguments]
+    tests: [zzmcp_test.go#TestSchemaToolRejectsInvalidArgumentsBeforeHandler]
+  - id: R-TOOL-3
+    text: "Missing, empty or null call arguments are treated as the empty object {} for validation and are passed to the handler as {}. Arguments that are not valid JSON, or are valid JSON but not an object, are answered with the invalid-arguments tool error result of R-TOOL-2 (INVALID_ARGUMENTS by default) without calling the handler."
+    refines: [R-TOOL]
+    code: [tool.go#validArguments]
+    tests: [zzmcp_test.go#TestInvalidArgumentsDefaultToCode]
+  - id: R-TOOL-4
+    text: "AddTool[In, Out] registers a typed tool. When the tool has no input schema, the schema is inferred from In with SchemaFor, and a failure to infer it makes registration return an error; an explicit schema is used as given. Validated arguments are decoded into In before the handler runs, and a decode failure is answered with the invalid-arguments tool error result of R-TOOL-2 (INVALID_ARGUMENTS by default)."
+    refines: [R-TOOL]
+    code: [tool.go#AddTool]
+  - id: R-TOOL-5
+    text: "On a server built with NewServer whose Options.InvalidArguments is set, every call that zzmcp rejects for invalid arguments (R-TOOL-2, R-TOOL-3, R-TOOL-4) is answered with the error that Options.InvalidArguments returns, and the handler is not called. Options.InvalidArguments receives the default INVALID_ARGUMENTS *Error, whose Message describes the failure. The error it returns is reported as an error returned by a handler would be (R-ERR-1 to R-ERR-3), so an error implementing StructuredContent() any, such as an RFC 9457 problem with code mcp_invalid_input, supplies the structuredContent body and its Error() text supplies the text content."
+    refines: [R-TOOL]
+    code: [tool.go#invalidArguments, zzmcp.go#NewServer, zzmcp.go#Options]
+    tests: [zzmcp_test.go#TestInvalidArgumentsUseServerError]
+  - id: R-TOOL-6
+    text: "The default INVALID_ARGUMENTS result of R-TOOL-2 is kept when Options.InvalidArguments is nil or returns nil, and for tools registered on a server not built with NewServer. Options.InvalidArguments is called only for zzmcp's own argument rejections: an error that a handler returns, even one with code INVALID_ARGUMENTS, is reported unchanged, and tools registered directly with the SDK (mcp.AddTool) keep the SDK's own argument validation."
+    refines: [R-TOOL]
+    code: [tool.go#invalidArguments, zzmcp.go#NewServer]
+  # Risks named by version 1 hazards. Describe each in text and set status: accepted.
+  - id: HAZ-CRED-MIXUP
+    type: risk
+    status: draft
+    title: Credential isolation
+    text: A tool call reads or alters another call's credentials or the HTTP request's credentials, allowing one tenant to act with another tenant's API key.
+    rationale: Adopted from the hazard comment in the earlier pilot; description is a draft pending owner review.
