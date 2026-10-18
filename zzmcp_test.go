@@ -177,6 +177,19 @@ type greetOutput struct {
 
 func (g greetOutput) Summary() string { return "Greeted: " + g.Greeting }
 
+func TestTypedToolRejectsNilResultBeforeSummary(t *testing.T) {
+	server := NewServer(Options{Name: "test", Version: "1"})
+	err := AddTool(server, &mcp.Tool{Name: "greet"},
+		func(context.Context, greetInput) (*greetOutput, error) { return nil, nil })
+	if err != nil {
+		t.Fatal(err)
+	}
+	result := call(t, connect(t, server), "greet", map[string]any{"name": "Ada"})
+	if !result.IsError || structured(t, result)["code"] != CodeInvalidResult {
+		t.Fatalf("nil output was not rejected before its value-receiver summary: %+v", result)
+	}
+}
+
 func TestTypedToolInfersObjectSchemaAndSummary(t *testing.T) {
 	server := NewServer(Options{Name: "test", Version: "1", ToolsListTTL: 5 * time.Minute})
 	err := AddTool(server, &mcp.Tool{Name: "greet", Description: "Greet someone."},

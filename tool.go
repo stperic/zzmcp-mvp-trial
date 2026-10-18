@@ -26,9 +26,9 @@ type Summarizer interface {
 // AddSchemaTool registers a tool whose input schema is written by hand, as a
 // JSON-compatible map or a *jsonschema.Schema with type "object".
 func AddSchemaTool(server *mcp.Server, tool *mcp.Tool, handler Handler) error {
-	return addTool(server, tool, func(ctx context.Context, arguments json.RawMessage) (any, string, error) {
+	return addTool(server, tool, func(ctx context.Context, arguments json.RawMessage) (any, Summarizer, error) {
 		output, err := handler(ctx, arguments)
-		return output, "", err
+		return output, nil, err
 	})
 }
 
@@ -43,24 +43,21 @@ func AddTool[In, Out any](server *mcp.Server, tool *mcp.Tool, handler func(conte
 		}
 		registered.InputSchema = schema
 	}
-	return addTool(server, &registered, func(ctx context.Context, arguments json.RawMessage) (any, string, error) {
+	return addTool(server, &registered, func(ctx context.Context, arguments json.RawMessage) (any, Summarizer, error) {
 		var input In
 		if err := json.Unmarshal(arguments, &input); err != nil {
-			return nil, "", invalidArguments(ctx, Errorf(CodeInvalidArguments, "%v", err))
+			return nil, nil, invalidArguments(ctx, Errorf(CodeInvalidArguments, "%v", err))
 		}
 		output, err := handler(ctx, input)
 		if err != nil {
-			return nil, "", err
+			return nil, nil, err
 		}
-		text := ""
-		if summary, ok := any(output).(Summarizer); ok {
-			text = summary.Summary()
-		}
-		return output, text, nil
+		summary, _ := any(output).(Summarizer)
+		return output, summary, nil
 	})
 }
 
-func addTool(server *mcp.Server, tool *mcp.Tool, call func(context.Context, json.RawMessage) (any, string, error)) error {
+func addTool(server *mcp.Server, tool *mcp.Tool, call func(context.Context, json.RawMessage) (any, Summarizer, error)) error {
 	resolved, err := resolveInputSchema(tool.InputSchema)
 	if err != nil {
 		return fmt.Errorf("tool %s: %w", tool.Name, err)
@@ -71,11 +68,17 @@ func addTool(server *mcp.Server, tool *mcp.Tool, call func(context.Context, json
 		if invalid != nil {
 			return ErrorResult(invalidArguments(ctx, invalid)), nil
 		}
-		output, text, err := call(ctx, arguments)
+		output, summary, err := call(ctx, arguments)
 		if err != nil {
 			return ErrorResult(err), nil
 		}
-		return ObjectResult(output, text), nil
+		result := ObjectResult(output, "")
+		if !result.IsError && summary != nil {
+			if text := summary.Summary(); text != "" {
+				result.Content = []mcp.Content{&mcp.TextContent{Text: text}}
+			}
+		}
+		return result, nil
 	})
 	return nil
 }
